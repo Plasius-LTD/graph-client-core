@@ -9,6 +9,20 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 ## [Unreleased]
 
 - **Added**
+  - (placeholder)
+
+- **Changed**
+  - (placeholder)
+
+- **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
+## [0.1.1] - 2026-03-06
+
+- **Added**
   - Optional telemetry sink support in `GraphClientOptions`.
   - Client-side analytics metrics for cache outcome, latency, and deduped inflight requests.
   - Error analytics for fetch/refresh failures.
@@ -34,3 +48,4 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 
 [0.1.0]: https://github.com/Plasius-LTD/graph-client-core/releases/tag/v0.1.0
+[0.1.1]: https://github.com/Plasius-LTD/graph-client-core/releases/tag/v0.1.1
