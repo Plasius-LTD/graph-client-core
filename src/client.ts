@@ -9,7 +9,7 @@ import type {
   TelemetrySink,
   Version,
 } from "@plasius/graph-contracts";
-import { DEFAULT_HARD_TTL_SECONDS, DEFAULT_SCHEMA_VERSION, DEFAULT_SOFT_TTL_SECONDS } from "@plasius/graph-contracts";
+import { DEFAULT_HARD_TTL_SECONDS, DEFAULT_SCHEMA_VERSION, DEFAULT_SOFT_TTL_SECONDS, isGraphQuery } from "@plasius/graph-contracts";
 
 export interface GraphTransportResponse {
   data: JsonValue;
@@ -62,6 +62,10 @@ export class GraphClient {
   }
 
   public async query(query: GraphQuery, options: GraphQueryOptions = {}): Promise<GraphQueryResult> {
+    if (!isGraphQuery(query)) {
+      throw new Error("Invalid graph query payload");
+    }
+
     const startedAt = this.now();
     const now = startedAt;
     const results: Record<string, GraphNodeResult> = {};

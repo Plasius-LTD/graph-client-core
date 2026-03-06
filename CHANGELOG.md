@@ -12,6 +12,7 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
   - Optional telemetry sink support in `GraphClientOptions`.
   - Client-side analytics metrics for cache outcome, latency, and deduped inflight requests.
   - Error analytics for fetch/refresh failures.
+  - Fast-fail query payload validation with `isGraphQuery`.
   - Telemetry behavior test coverage.
 
 - **Changed**

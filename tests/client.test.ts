@@ -166,4 +166,20 @@ describe("GraphClient", () => {
       }),
     );
   });
+
+  it("fails fast when query payload is invalid", async () => {
+    const client = new GraphClient({
+      transport: {
+        async fetch() {
+          throw new Error("should not run");
+        },
+      },
+    });
+
+    await expect(
+      client.query({
+        requests: "bad",
+      } as unknown as any),
+    ).rejects.toThrow("Invalid graph query payload");
+  });
 });

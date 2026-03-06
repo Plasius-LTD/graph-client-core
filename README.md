@@ -99,6 +99,8 @@ Emitted metrics/errors include:
 - `graph.client.fetch.error`
 - `graph.client.inflight.deduped`
 
+The client fails fast on invalid query payload shapes using `isGraphQuery`.
+
 ---
 
 ## Architecture
