@@ -6,6 +6,7 @@ import type {
   GraphQueryResult,
   JsonValue,
   ResolverRequest,
+  TelemetrySink,
   Version,
 } from "@plasius/graph-contracts";
 import { DEFAULT_HARD_TTL_SECONDS, DEFAULT_SCHEMA_VERSION, DEFAULT_SOFT_TTL_SECONDS } from "@plasius/graph-contracts";
@@ -26,6 +27,7 @@ export interface GraphClientOptions {
   policy?: Partial<CachePolicy>;
   now?: () => number;
   schemaVersion?: string;
+  telemetry?: TelemetrySink;
 }
 
 export interface GraphQueryOptions {
@@ -43,6 +45,7 @@ export class GraphClient {
   private readonly now: () => number;
   private readonly schemaVersion: string;
   private readonly policy: CachePolicy;
+  private readonly telemetry?: TelemetrySink;
   private readonly cache = new Map<string, CacheEnvelope<JsonValue>>();
   private readonly tagIndex = new Map<string, Set<string>>();
   private readonly inflight = new Map<string, Promise<CacheEnvelope<JsonValue>>>();
@@ -55,10 +58,12 @@ export class GraphClient {
       softTtlSeconds: options.policy?.softTtlSeconds ?? DEFAULT_SOFT_TTL_SECONDS,
       hardTtlSeconds: options.policy?.hardTtlSeconds ?? DEFAULT_HARD_TTL_SECONDS,
     };
+    this.telemetry = options.telemetry;
   }
 
   public async query(query: GraphQuery, options: GraphQueryOptions = {}): Promise<GraphQueryResult> {
-    const now = this.now();
+    const startedAt = this.now();
+    const now = startedAt;
     const results: Record<string, GraphNodeResult> = {};
     const errors: GraphQueryResult["errors"] = [];
     let stale = false;
@@ -72,17 +77,50 @@ export class GraphClient {
       const hardTtlMs = this.policy.hardTtlSeconds * 1000;
 
       if (!options.forceRefresh && cached && ageMs <= softTtlMs) {
+        this.telemetry?.metric({
+          name: "graph.client.cache.outcome",
+          value: 1,
+          unit: "count",
+          tags: {
+            outcome: "fresh_hit",
+            resolver: request.resolver,
+          },
+        });
         results[request.key] = this.toNodeResult(request.key, cached, false);
         continue;
       }
 
       const canServeStale = !options.forceRefresh && options.allowStale !== false && cached && ageMs <= hardTtlMs;
       if (canServeStale) {
+        this.telemetry?.metric({
+          name: "graph.client.cache.outcome",
+          value: 1,
+          unit: "count",
+          tags: {
+            outcome: "stale_hit",
+            resolver: request.resolver,
+          },
+        });
+        this.telemetry?.metric({
+          name: "graph.client.stale_served",
+          value: 1,
+          unit: "count",
+        });
         stale = true;
         results[request.key] = this.toNodeResult(request.key, cached, true);
         void this.refresh(request, cacheKey, query.traceId);
         continue;
       }
+
+      this.telemetry?.metric({
+        name: "graph.client.cache.outcome",
+        value: 1,
+        unit: "count",
+        tags: {
+          outcome: "miss",
+          resolver: request.resolver,
+        },
+      });
 
       try {
         const envelope = await this.refresh(request, cacheKey, query.traceId);
@@ -106,8 +144,27 @@ export class GraphClient {
             retryable: true,
           },
         };
+        this.telemetry?.metric({
+          name: "graph.client.fetch.error",
+          value: 1,
+          unit: "count",
+          tags: {
+            resolver: request.resolver,
+          },
+        });
+        this.telemetry?.error({
+          message,
+          source: request.resolver,
+          code: "CLIENT_FETCH_FAILED",
+        });
       }
     }
+
+    this.telemetry?.metric({
+      name: "graph.client.query.latency",
+      value: this.now() - startedAt,
+      unit: "ms",
+    });
 
     return {
       queryId: query.id,
@@ -147,9 +204,15 @@ export class GraphClient {
   private async refresh(request: ResolverRequest, cacheKey: string, traceId?: string): Promise<CacheEnvelope<JsonValue>> {
     const inflightExisting = this.inflight.get(cacheKey);
     if (inflightExisting) {
+      this.telemetry?.metric({
+        name: "graph.client.inflight.deduped",
+        value: 1,
+        unit: "count",
+      });
       return inflightExisting;
     }
 
+    const refreshStartedAt = this.now();
     const inflightPromise = this.transport
       .fetch(request, { traceId })
       .then((response) => {
@@ -166,7 +229,24 @@ export class GraphClient {
 
         this.cache.set(cacheKey, envelope);
         this.attachTags({ key: cacheKey, tags: new Set(envelope.tags) });
+        this.telemetry?.metric({
+          name: "graph.client.refresh.latency",
+          value: this.now() - refreshStartedAt,
+          unit: "ms",
+          tags: {
+            resolver: request.resolver,
+          },
+        });
         return envelope;
+      })
+      .catch((error) => {
+        const message = error instanceof Error ? error.message : "Unknown transport error";
+        this.telemetry?.error({
+          message,
+          source: request.resolver,
+          code: "CLIENT_REFRESH_FAILED",
+        });
+        throw error;
       })
       .finally(() => {
         this.inflight.delete(cacheKey);

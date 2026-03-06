@@ -62,6 +62,7 @@ const client = new GraphClient({
       };
     },
   },
+  telemetry,
 });
 
 const result = await client.query({
@@ -83,6 +84,20 @@ npm run typecheck
 npm run test:coverage
 npm run build
 ```
+
+---
+
+## Telemetry
+
+`GraphClientOptions` accepts a `telemetry` sink (`TelemetrySink` from `@plasius/graph-contracts`).
+
+Emitted metrics/errors include:
+
+- `graph.client.cache.outcome` (`fresh_hit` / `stale_hit` / `miss`)
+- `graph.client.query.latency`
+- `graph.client.refresh.latency`
+- `graph.client.fetch.error`
+- `graph.client.inflight.deduped`
 
 ---
 

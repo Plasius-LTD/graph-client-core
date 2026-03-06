@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type { ResolverRequest } from "@plasius/graph-contracts";
 import { GraphClient } from "../src/client.js";
@@ -106,5 +106,64 @@ describe("GraphClient", () => {
     const removed = client.invalidateTags(["profile"]);
 
     expect(removed).toBe(1);
+  });
+
+  it("emits telemetry for cache outcomes, errors, and query latency", async () => {
+    const telemetry = {
+      metric: vi.fn(),
+      error: vi.fn(),
+      trace: vi.fn(),
+    };
+    const transport = {
+      async fetch(request: ResolverRequest) {
+        if (request.key === "bad:1") {
+          throw new Error("upstream down");
+        }
+        return {
+          data: { ok: true },
+          version: 1,
+          tags: ["profile"],
+        };
+      },
+    };
+
+    const client = new GraphClient({
+      transport,
+      telemetry,
+      policy: { softTtlSeconds: 60, hardTtlSeconds: 120 },
+    });
+
+    await client.query({
+      requests: [{ resolver: "profile.get", key: "good:1" }],
+    });
+    await client.query({
+      requests: [{ resolver: "profile.get", key: "good:1" }],
+    });
+    await client.query({
+      requests: [{ resolver: "profile.get", key: "bad:1" }],
+    });
+
+    expect(telemetry.metric).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "graph.client.cache.outcome",
+        tags: expect.objectContaining({ outcome: "miss" }),
+      }),
+    );
+    expect(telemetry.metric).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "graph.client.cache.outcome",
+        tags: expect.objectContaining({ outcome: "fresh_hit" }),
+      }),
+    );
+    expect(telemetry.metric).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "graph.client.query.latency",
+      }),
+    );
+    expect(telemetry.error).toHaveBeenCalledWith(
+      expect.objectContaining({
+        code: "CLIENT_FETCH_FAILED",
+      }),
+    );
   });
 });

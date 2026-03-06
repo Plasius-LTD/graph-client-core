@@ -9,16 +9,19 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 ## [Unreleased]
 
 - **Added**
-  - (placeholder)
+  - Optional telemetry sink support in `GraphClientOptions`.
+  - Client-side analytics metrics for cache outcome, latency, and deduped inflight requests.
+  - Error analytics for fetch/refresh failures.
+  - Telemetry behavior test coverage.
 
 - **Changed**
-  - (placeholder)
+  - README now documents client-core telemetry signals.
 
 - **Fixed**
-  - (placeholder)
+  - N/A
 
 - **Security**
-  - (placeholder)
+  - N/A
 
 ## [0.1.0] - 2026-03-05
 
