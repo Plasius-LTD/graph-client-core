@@ -1,6 +1,6 @@
 {
   "name": "@plasius/graph-client-core",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Framework-agnostic graph client runtime with normalized cache and stale policy controls",
   "type": "module",
   "sideEffects": false,
