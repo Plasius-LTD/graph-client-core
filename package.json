@@ -30,7 +30,9 @@
     "lint": "eslint . --max-warnings=0",
     "prepare": "npm run build",
     "clean": "rimraf dist coverage",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "pack:check": "node scripts/verify-public-artifacts.cjs --package-dir .",
+    "prepublishOnly": "npm run build && npm run pack:check"
   },
   "keywords": [
     "plasius",
