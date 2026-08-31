@@ -8,9 +8,6 @@
 [![Security Policy](https://img.shields.io/badge/security%20policy-yes-orange.svg)](./SECURITY.md)
 [![Changelog](https://img.shields.io/badge/changelog-md-blue.svg)](./CHANGELOG.md)
 
-[![CI](https://github.com/Plasius-LTD/graph-client-core/actions/workflows/ci.yml/badge.svg)](https://github.com/Plasius-LTD/graph-client-core/actions/workflows/ci.yml)
-[![CD](https://github.com/Plasius-LTD/graph-client-core/actions/workflows/cd.yml/badge.svg)](https://github.com/Plasius-LTD/graph-client-core/actions/workflows/cd.yml)
-
 Framework-agnostic graph client runtime with normalized cache and stale policy controls.
 
 Apache-2.0. ESM + CJS builds. TypeScript types included.
