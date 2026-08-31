@@ -1,0 +1,16 @@
+name: Standardise package badges once
+
+on:
+  push:
+    branches:
+      - docs/standardise-package-badges
+
+permissions:
+  contents: write
+
+jobs:
+  standardise:
+    if: github.actor != 'github-actions[bot]'
+    uses: Plasius-LTD/schema/.github/workflows/standardise-package-badges-reusable.yml@automation/readme-badge-normaliser
+    with:
+      branch: docs/standardise-package-badges
