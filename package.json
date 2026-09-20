@@ -51,7 +51,7 @@
   },
   "homepage": "https://github.com/Plasius-LTD/graph-client-core#readme",
   "dependencies": {
-    "@plasius/graph-contracts": "^0.1.9"
+    "@plasius/graph-contracts": "^0.1.10"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
