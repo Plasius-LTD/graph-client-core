@@ -8,6 +8,8 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+- Restore trusted-push-only CI on approved quarantined self-hosted Linux/X64 runners, retaining hosted exact-main npm OIDC publication and all quality/artifact gates.
+
 - **Added**
   - (placeholder)
 
