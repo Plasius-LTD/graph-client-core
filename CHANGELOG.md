@@ -8,6 +8,20 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+- **Added**
+  - (placeholder)
+
+- **Changed**
+  - (placeholder)
+
+- **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
+## [0.1.17] - 2026-10-21
+
 - Restore trusted-push-only CI on approved quarantined self-hosted Linux/X64 runners, retaining hosted exact-main npm OIDC publication and all quality/artifact gates.
 
 - **Added**
@@ -284,3 +298,4 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 [0.1.14]: https://github.com/Plasius-LTD/graph-client-core/releases/tag/v0.1.14
 [0.1.15]: https://github.com/Plasius-LTD/graph-client-core/releases/tag/v0.1.15
 [0.1.16]: https://github.com/Plasius-LTD/graph-client-core/releases/tag/v0.1.16
+[0.1.17]: https://github.com/Plasius-LTD/graph-client-core/releases/tag/v0.1.17
