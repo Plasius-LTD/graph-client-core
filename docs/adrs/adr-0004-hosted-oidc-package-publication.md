@@ -1,6 +1,6 @@
 # ADR-0004: Hosted OIDC Package Publication
 
-- Status: Accepted
+- Status: Accepted; CI runner policy superseded by ADR-0005
 - Date: 2026-08-11
 
 ## Context
@@ -16,7 +16,7 @@ Publish only from the GitHub-hosted `production` job using npm trusted
 publishing. Prove the prepared SHA is still the exact remote `main` head and
 that push-triggered `ci.yml` succeeded for it. Require Node 24 and npm 11.5.1 or
 newer, request provenance, and prohibit npm write-token fallbacks. Reviewed CI
-uses explicit GitHub-hosted runners; fork PR code is denied.
+uses the quarantined self-hosted trusted-push boundary in ADR-0005; fork PR code is denied.
 
 ## Consequences
 

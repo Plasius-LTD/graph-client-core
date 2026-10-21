@@ -75,7 +75,7 @@ console.log(result.results["user:1"]?.data);
 
 ```bash
 npm run clean
-npm install
+npm ci
 npm run lint
 npm run typecheck
 npm run test:coverage
@@ -116,10 +116,22 @@ Licensed under the [Apache-2.0 License](./LICENSE).
 
 CI keeps the administrative contributor registry outside Git and npm package
 artifacts using exact, case-normalised path checks. CI runs on approved
-GitHub-hosted runners for same-repository pull requests and `main`, with
-package-manager cache finalization disabled; fork PR code is denied.
+self-hosted Linux/X64 runners in `Public CI - Quarantined`, using trusted
+repository pushes only. Pull-request events never execute repository code on
+these runners. The group admits only selected repositories and workflow refs;
+`main` is admitted, and reviewed delivery branches require a temporary explicit
+admission removed after verification. Checkout credentials and package-manager
+cache finalization are disabled; installs use the committed lockfile with `npm ci`.
+All lint, type, audit, build, package, artifact and >=80% line-coverage gates remain
+mandatory, with bounded 15-minute validation and 10-minute artifact jobs.
 Publication uses the GitHub-hosted `production` job with Node 24 and a pinned
 npm 11.6.2 client. It is token-free and proceeds only while the prepared SHA
 is the exact `main` head after successful push-triggered CI. Do not dispatch CD
 until the npm trusted-publisher binding is verified.
+
+The parent rollout flag `platform.public-artifact-integrity.enabled` stages public
+restoration; enabled or disabled, mandatory source/package admission is enforced.
+Rollback disables CI/CD or removes the affected workflow admission from the runner
+group. Never restore the administrative registry, add hosted CI fallback, or use a
+long-lived npm write token. See [ADR-0005](docs/adrs/adr-0005-quarantined-push-ci.md).
 <!-- END PLASIUS RELEASE INTEGRITY -->
