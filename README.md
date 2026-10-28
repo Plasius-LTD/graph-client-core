@@ -121,6 +121,20 @@ npm run build
 
 `GraphClientOptions` accepts a `telemetry` sink (`TelemetrySink` from `@plasius/graph-contracts`).
 
+When a query returns an eligible stale snapshot, it owns the background refresh's
+rejection. A failed refresh preserves that snapshot until its hard TTL and does
+not cause an unhandled promise rejection, even without telemetry. Concurrent
+readers still share one fetch; failure clears pending work so a later query can
+attempt another refresh. The client does not automatically retry.
+
+`CLIENT_REFRESH_FAILED` is emitted once per failing transport operation when a
+sink is supplied. Stale callers keep their successful stale result; they do not
+emit `CLIENT_FETCH_FAILED`. Foreground misses, `allowStale: false`, `forceRefresh`
+and hard-expired reads still return controlled partial results with
+`CLIENT_FETCH_FAILED`, including callers that join a background refresh. No
+process-global rejection handler is installed. See
+[ADR-0003](docs/adrs/adr-0003-client-telemetry-baseline.md).
+
 Emitted metrics/errors include:
 
 - `graph.client.cache.outcome` (`fresh_hit` / `stale_hit` / `miss`)

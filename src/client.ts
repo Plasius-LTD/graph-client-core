@@ -117,7 +117,8 @@ export class GraphClient {
         });
         stale = true;
         results[request.key] = this.toNodeResult(request.key, cached, true);
-        void this.refresh(request, cacheKey, query.traceId);
+        // refresh reports transport failure once; this stale caller owns its detached rejection.
+        void this.refresh(request, cacheKey, query.traceId).catch(() => undefined);
         continue;
       }
 

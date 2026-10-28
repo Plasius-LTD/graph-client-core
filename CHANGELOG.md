@@ -15,7 +15,7 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
   - (placeholder)
 
 - **Fixed**
-  - (placeholder)
+  - Handle detached stale-refresh rejections with or without telemetry while preserving foreground errors, shared fetches, TTL eligibility and recovery (Project #39).
 
 - **Security**
   - (placeholder)
