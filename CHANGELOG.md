@@ -15,6 +15,20 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
   - (placeholder)
 
 - **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
+## [0.1.18] - 2026-10-28
+
+- **Added**
+  - (placeholder)
+
+- **Changed**
+  - (placeholder)
+
+- **Fixed**
   - Fence pending refreshes on tag invalidation or priming so obsolete responses cannot restore cache entries, overwrite explicit state, or remove newer in-flight work; retain current-request deduplication without generation tombstones.
   - (placeholder)
 
@@ -300,3 +314,4 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 [0.1.15]: https://github.com/Plasius-LTD/graph-client-core/releases/tag/v0.1.15
 [0.1.16]: https://github.com/Plasius-LTD/graph-client-core/releases/tag/v0.1.16
 [0.1.17]: https://github.com/Plasius-LTD/graph-client-core/releases/tag/v0.1.17
+[0.1.18]: https://github.com/Plasius-LTD/graph-client-core/releases/tag/v0.1.18
