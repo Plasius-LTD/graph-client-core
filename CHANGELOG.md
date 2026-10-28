@@ -15,6 +15,7 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
   - (placeholder)
 
 - **Fixed**
+  - Fence pending refreshes on tag invalidation or priming so obsolete responses cannot restore cache entries, overwrite explicit state, or remove newer in-flight work; retain current-request deduplication without generation tombstones.
   - (placeholder)
 
 - **Security**

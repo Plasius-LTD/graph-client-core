@@ -63,11 +63,44 @@ const client = new GraphClient({
 });
 
 const result = await client.query({
-  requests: [{ resolver: "user.profile", key: "user:1" }],
+  requests: [{ resolver: "user.profile", key: "user:1", tags: ["user"] }],
 });
 
 console.log(result.results["user:1"]?.data);
 ```
+
+---
+
+## Invalidation and priming during refresh
+
+`invalidateTags(tags)` removes matching cached entries and detaches their pending
+refreshes. It also detaches initial pending requests whose advertised
+`ResolverRequest.tags` intersect the invalidation, even before an entry exists.
+Its return value counts removed cache entries, so invalidating only pending work
+returns zero. Advertise tags on requests when invalidation must cover initial
+fetches; response-only tags cannot be known until a response is cached.
+
+`prime(envelope)` makes that envelope authoritative for its exact cache key and
+detaches any earlier refresh for the key. Versions remain opaque: priming is an
+explicit ownership boundary, not a numeric or lexical version comparison.
+
+Detached work is not cancelled. Callers that already awaited it can receive its
+original result or error, but its completion cannot populate the cache, overwrite
+a prime/newer refresh, or remove newer pending work. Callers after invalidation
+start a current fetch; callers after priming use that envelope under normal TTL
+rules, or start a current fetch with `forceRefresh`. Concurrent current callers
+still share one fetch. Ownership is recorded before transport invocation, including
+synchronous transport failure or reentrant invalidation.
+
+Ownership metadata exists only for active refreshes; no per-key generation history
+is retained. This does not impose a cache capacity limit, change existing key/TTL
+contracts, or resolve the separately tracked tag-index replacement work in #22.
+See [ADR-0006](docs/adrs/adr-0006-refresh-ownership-boundaries.md).
+
+The consuming-service flag `cachedGraphReliabilityHardening` controls adoption and
+rollback of the published fix (site Story #2289 / Task #2290). Package correctness
+is unconditional. Host capabilities, enabled/disabled/rollback tests and approved
+site deployment remain the consumer's responsibility; no live flag is changed here.
 
 ---
 

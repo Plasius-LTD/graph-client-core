@@ -5,3 +5,4 @@
 - [ADR-0003: Client Telemetry Baseline](./adr-0003-client-telemetry-baseline.md)
 - [ADR-0004: Hosted OIDC Package Publication](./adr-0004-hosted-oidc-package-publication.md)
 - [ADR-0005: Quarantined Trusted-Push CI](./adr-0005-quarantined-push-ci.md)
+- [ADR-0006: Refresh Ownership Boundaries](./adr-0006-refresh-ownership-boundaries.md)

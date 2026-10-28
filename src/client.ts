@@ -40,6 +40,11 @@ interface CacheIndexEntry {
   tags: Set<string>;
 }
 
+interface InflightRefresh {
+  promise: Promise<CacheEnvelope<JsonValue>>;
+  tags: Set<string>;
+}
+
 export class GraphClient {
   private readonly transport: GraphTransport;
   private readonly now: () => number;
@@ -48,7 +53,7 @@ export class GraphClient {
   private readonly telemetry?: TelemetrySink;
   private readonly cache = new Map<string, CacheEnvelope<JsonValue>>();
   private readonly tagIndex = new Map<string, Set<string>>();
-  private readonly inflight = new Map<string, Promise<CacheEnvelope<JsonValue>>>();
+  private readonly inflight = new Map<string, InflightRefresh>();
 
   public constructor(options: GraphClientOptions) {
     this.transport = options.transport;
@@ -180,15 +185,18 @@ export class GraphClient {
     };
   }
 
+  /** Evicts matching entries and detaches matching pending work without cancelling its callers. */
   public invalidateTags(tags: string[]): number {
     let removed = 0;
-    for (const tag of tags) {
+    const invalidatedTags = new Set(tags);
+    for (const tag of invalidatedTags) {
       const keys = this.tagIndex.get(tag);
       if (!keys) {
         continue;
       }
 
       for (const key of keys) {
+        this.inflight.delete(key);
         if (this.cache.delete(key)) {
           removed += 1;
         }
@@ -197,10 +205,19 @@ export class GraphClient {
       this.tagIndex.delete(tag);
     }
 
+    // An initial fetch can advertise invalidatable tags before it has cached an envelope.
+    for (const [key, refresh] of this.inflight) {
+      if ([...refresh.tags].some((tag) => invalidatedTags.has(tag))) {
+        this.inflight.delete(key);
+      }
+    }
+
     return removed;
   }
 
+  /** Makes this envelope authoritative for its key, fencing previously started refreshes. */
   public prime(envelope: CacheEnvelope<JsonValue>): void {
+    this.inflight.delete(envelope.key);
     this.cache.set(envelope.key, envelope);
     this.attachTags({ key: envelope.key, tags: new Set(envelope.tags) });
   }
@@ -213,12 +230,13 @@ export class GraphClient {
         value: 1,
         unit: "count",
       });
-      return inflightExisting;
+      return inflightExisting.promise;
     }
 
     const refreshStartedAt = this.now();
-    const inflightPromise = this.transport
-      .fetch(request, { traceId })
+    // Invoke transport after recording ownership, including reentrant invalidation or a synchronous throw.
+    const inflightPromise: Promise<CacheEnvelope<JsonValue>> = Promise.resolve()
+      .then(() => this.transport.fetch(request, { traceId }))
       .then((response) => {
         const envelope: CacheEnvelope<JsonValue> = {
           key: cacheKey,
@@ -231,8 +249,11 @@ export class GraphClient {
           tags: response.tags ?? request.tags ?? [],
         };
 
-        this.cache.set(cacheKey, envelope);
-        this.attachTags({ key: cacheKey, tags: new Set(envelope.tags) });
+        // Promise identity is the ownership token; no historical per-key generation map is retained.
+        if (this.inflight.get(cacheKey)?.promise === inflightPromise) {
+          this.cache.set(cacheKey, envelope);
+          this.attachTags({ key: cacheKey, tags: new Set(envelope.tags) });
+        }
         this.telemetry?.metric({
           name: "graph.client.refresh.latency",
           value: this.now() - refreshStartedAt,
@@ -253,10 +274,12 @@ export class GraphClient {
         throw error;
       })
       .finally(() => {
-        this.inflight.delete(cacheKey);
+        if (this.inflight.get(cacheKey)?.promise === inflightPromise) {
+          this.inflight.delete(cacheKey);
+        }
       });
 
-    this.inflight.set(cacheKey, inflightPromise);
+    this.inflight.set(cacheKey, { promise: inflightPromise, tags: new Set(request.tags ?? []) });
     return inflightPromise;
   }
 
