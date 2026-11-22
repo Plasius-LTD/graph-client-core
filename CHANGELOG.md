@@ -8,6 +8,20 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+- **Added**
+  - (placeholder)
+
+- **Changed**
+  - (placeholder)
+
+- **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
+## [0.1.19] - 2026-11-22
+
 - Refresh supported npm dependency and security tooling baselines; preserve runtime API contracts (weekly maintenance, 2026-11-22).
 
 - **Added**
@@ -317,3 +331,4 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 [0.1.16]: https://github.com/Plasius-LTD/graph-client-core/releases/tag/v0.1.16
 [0.1.17]: https://github.com/Plasius-LTD/graph-client-core/releases/tag/v0.1.17
 [0.1.18]: https://github.com/Plasius-LTD/graph-client-core/releases/tag/v0.1.18
+[0.1.19]: https://github.com/Plasius-LTD/graph-client-core/releases/tag/v0.1.19
